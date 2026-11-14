@@ -28,12 +28,20 @@ struct MergeableApp: App {
 struct RootView: View {
     @EnvironmentObject var store: AccountStore
     @EnvironmentObject var env: AppEnvironment
-    @StateObject private var inbox = InboxModel()
+    @StateObject private var inbox: InboxModel
     @State private var tab: InboxTab = .all
     @State private var showAccounts = false
     #if os(macOS)
     @State private var selection: InboxItem?
     #endif
+
+    /// The defaults are what the app uses; the screenshot harness passes fixture data.
+    @MainActor init(inbox: InboxModel? = nil, selection: InboxItem? = nil) {
+        _inbox = StateObject(wrappedValue: inbox ?? InboxModel())
+        #if os(macOS)
+        _selection = State(initialValue: selection)
+        #endif
+    }
 
     var body: some View {
         #if os(macOS)

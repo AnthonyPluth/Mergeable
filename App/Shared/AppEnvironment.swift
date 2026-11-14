@@ -7,6 +7,8 @@ import MergeableCore
 final class AppEnvironment: ObservableObject {
     let keychain: KeychainStore
     let client: GitHubClient
+    /// Screenshot harness only (empty in the app): a PR with an entry here is shown from it instead of being fetched.
+    var detailFixtures: [String: PRDetailFixture] = [:]
 
     init(store: AccountStore) {
         let keychain = KeychainStore(flow: DeviceFlow(clientID: AppConfig.githubAppClientID, transport: URLSessionTransport()))
@@ -15,4 +17,9 @@ final class AppEnvironment: ObservableObject {
             Task { @MainActor in store?.markNeedsAttention(id) }
         })
     }
+}
+
+struct PRDetailFixture {
+    var detail: PullRequestDetail
+    var files: [ChangedFile]
 }

@@ -53,7 +53,10 @@ struct PRDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom, spacing: 0) { actions }
-        .task { await model.load(store: store, client: env.client) }
+        .task {
+            if let f = env.detailFixtures[model.item.summary.nodeID] { model.useFixture(f) }
+            else { await model.load(store: store, client: env.client) }
+        }
         .sheet(item: $sheet) { which in sheetContent(which) }
         .confirmationDialog("Which account should act?", isPresented: Binding(get: { choosing != nil }, set: { if !$0 { choosing = nil } }), titleVisibility: .visible) {
             ForEach(choices) { a in

@@ -9,9 +9,16 @@ final class InboxModel: ObservableObject {
     @Published private(set) var isLoading = false
     @Published private(set) var lastRefreshed: Date?
 
+    /// True for the screenshot harness: the snapshots are fixed and `refresh` does nothing.
+    private let isFixture: Bool
+
+    init() { isFixture = false }
+    init(fixture snapshots: [AccountID: InboxSnapshot]) { isFixture = true; self.snapshots = snapshots }
+
     var merged: [InboxSection: [InboxItem]] { InboxLogic.merge(snapshots) }
 
     func refresh(accounts: [Account], client: GitHubClient) async {
+        guard !isFixture else { return }
         isLoading = true
         defer { isLoading = false }
         let ids = Set(accounts.map(\.id))

@@ -29,6 +29,11 @@ final class PRDetailModel: ObservableObject {
 
     var key: PRKey { item.summary.key }
 
+    /// Screenshot harness only: show this PR without fetching.
+    func useFixture(_ f: PRDetailFixture) {
+        detail = f.detail; files = f.files; seenHeadOid = f.detail.summary.status.headOid
+    }
+
     func load(store: AccountStore, client: GitHubClient) async {
         guard let reader = InboxLogic.readAccount(key: key, fetchedBy: item.fetchedBy, router: store.router) else {
             loadError = "No account can read this pull request."; return

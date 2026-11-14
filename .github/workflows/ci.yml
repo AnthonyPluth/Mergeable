@@ -85,3 +85,38 @@ jobs:
       - name: Test macOS
         working-directory: App
         run: xcodebuild -project Mergeable.xcodeproj -scheme Mergeable -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO test
+      # Mockup sign-off: the real screens rendered from fixture data (App/Tests/MockupScreenshotTests.swift), dark, 2x.
+      # They run after the build and test steps, so nothing here can change their result. Compare them with docs/mockups.
+      - name: Screenshots (macOS)
+        working-directory: App
+        env:
+          TEST_RUNNER_SCREENSHOT_DIR: ${{ github.workspace }}/screenshots
+        run: xcodebuild -project Mergeable.xcodeproj -scheme Mergeable -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO test -only-testing:MergeableTests/MockupScreenshotTests
+      # Simulator boot and device names vary between runner images, so this one is an aid, not a gate; the macOS step
+      # above also renders the iPhone-size frames.
+      - name: Screenshots (iOS Simulator)
+        continue-on-error: true
+        working-directory: App
+        env:
+          TEST_RUNNER_SCREENSHOT_DIR: ${{ github.workspace }}/screenshots
+        run: |
+          udid=$(xcrun simctl list devices available -j | python3 -c '
+          import json, re, sys
+          runtimes = json.load(sys.stdin)["devices"]
+          for runtime in sorted((r for r in runtimes if "iOS" in r), reverse=True):
+              phones = [d for d in runtimes[runtime] if d["name"].startswith("iPhone")]
+              plain = [d for d in phones if re.fullmatch(r"iPhone \d+", d["name"])]
+              pick = (plain or phones)
+              if pick:
+                  print(pick[-1]["udid"]); break
+          ')
+          echo "Simulator: $udid"
+          test -n "$udid"
+          xcodebuild -project Mergeable.xcodeproj -scheme Mergeable -destination "id=$udid" CODE_SIGNING_ALLOWED=NO test -only-testing:MergeableTests/MockupScreenshotTests
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9   # v7.0.2
+        with:
+          name: screenshots
+          path: screenshots/*.png
+          if-no-files-found: warn
