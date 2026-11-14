@@ -50,6 +50,10 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pluth.mergeable.tests
         GENERATE_INFOPLIST_FILE: YES
+        # A multiplatform target's host executable sits in a different place on each platform.
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Mergeable.app/Mergeable
+        "TEST_HOST[sdk=macosx*]": $(BUILT_PRODUCTS_DIR)/Mergeable.app/Contents/MacOS/Mergeable
+        BUNDLE_LOADER: $(TEST_HOST)
 schemes:
   Mergeable:
     build:
