@@ -52,3 +52,26 @@ jobs:
           else
             echo "MergeableCore not present yet; skipping."
           fi
+  app:
+    # XcodeGen project; builds iOS (simulator) and macOS without signing, then runs the unit tests on macOS.
+    runs-on: macos-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Generate the Xcode project
+        working-directory: App
+        run: |
+          brew install xcodegen
+          xcodegen generate
+      - name: Build iOS
+        working-directory: App
+        run: xcodebuild -project Mergeable.xcodeproj -scheme Mergeable -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+      - name: Build macOS
+        working-directory: App
+        run: xcodebuild -project Mergeable.xcodeproj -scheme Mergeable -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
+      - name: Test macOS
+        working-directory: App
+        run: xcodebuild -project Mergeable.xcodeproj -scheme Mergeable -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO test

@@ -1,0 +1,7 @@
+{
+  "name": "mergeable-primer",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "node build-assets.mjs" },
+  "dependencies": { "@primer/octicons": "^19.0.0", "@primer/primitives": "^11.0.0" }
+}

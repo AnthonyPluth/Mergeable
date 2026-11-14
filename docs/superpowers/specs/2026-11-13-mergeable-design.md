@@ -78,7 +78,7 @@ The app has no "current account": every write picks its token from the PR's repo
 
 An inbox, a PR detail screen and a handful of actions, on both iPhone and Mac.
 
-**Look:** match GitHub's own styling closely, in light and dark mode. Use GitHub's Primer colors and spacing, its Octicons icon set (both open source), and GitHub's PR state colors: open green, draft gray, merged purple, closed red. Checks and review states use the same icons as github.com. The app icon and name stay its own, with no GitHub logo. You sign off on mockups of the inbox and PR screens before they're built.
+**Look:** match GitHub's own styling closely, in dark mode (the app is dark-only). Use GitHub's Primer colors and spacing, its Octicons icon set (both open source), and GitHub's PR state colors: open green, draft gray, merged purple, closed red. Checks and review states use the same icons as github.com. The app icon and name stay its own, with no GitHub logo. You sign off on mockups of the inbox and PR screens before they're built.
 
 - **Inbox:** tabs for All, Personal and Work (one per account). Each tab has three sections: Needs your review, Your PRs, Assigned or mentioned. Each row shows repo, title, author, checks status, review state, age and the account badge.
 - **PR detail:** description, conversation, checks, and files changed with read-only diffs.
