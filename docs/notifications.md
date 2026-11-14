@@ -27,9 +27,9 @@ shows but never alerts, so a PR is never announced twice.
 2. In the app: Accounts, Notifications. Enter the relay URL (`https://push.pluth.org`) and the registration secret, then Save and register. The
    secret goes in the Keychain. Do this on each device.
 3. Push only works in a signed build with the Push Notifications capability and your team's provisioning. In Xcode, select your team, add the
-   capability on both platforms, and run a Debug build (registers as `sandbox`) or a Release/TestFlight build (registers as `production`). On the Mac
-   the entitlement key is `com.apple.developer.aps-environment`; the project file currently sets only `aps-environment`, so check the Mac
-   entitlement when you sign.
+   capability on both platforms, and run a Debug build (registers as `sandbox`) or a Release/TestFlight build (registers as `production`). The push
+   entitlement key differs by platform (`aps-environment` on iOS, `com.apple.developer.aps-environment` on macOS); `App/Entitlements/` has one file
+   for each and `project.yml` picks the right one per SDK.
 4. Allow notifications when asked. Turn alerts off per work account under Alerts on this device if you want.
 5. Mac: turn on Start at login if you want the menu bar item after a restart.
 
