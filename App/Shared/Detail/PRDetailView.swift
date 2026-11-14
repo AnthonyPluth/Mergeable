@@ -206,14 +206,14 @@ struct PRDetailView: View {
         if let account = actor {
             switch which {
             case .comment:
-                ComposeSheet(title: "Comment", buttonTitle: ActionTitle.comment(account.login), bodyRequired: true, isBusy: model.isActing,
+                ComposeSheet(title: "Comment", buttonTitle: ActionTitle.comment(account.login), bodyRequired: true, isBusy: model.isActing, error: model.actionError,
                              onSend: { send(.comment($0), account) }, onCancel: { sheet = nil })
             case .requestChanges:
-                ComposeSheet(title: "Request changes", buttonTitle: ActionTitle.requestChanges(account.login), bodyRequired: true, isBusy: model.isActing,
+                ComposeSheet(title: "Request changes", buttonTitle: ActionTitle.requestChanges(account.login), bodyRequired: true, isBusy: model.isActing, error: model.actionError,
                              onSend: { send(.review(.requestChanges, $0), account) }, onCancel: { sheet = nil })
             case .merge:
                 MergeSheet(account: account, key: model.key, baseBranch: summary.baseBranch, headOid: model.seenHeadOid ?? summary.status.headOid,
-                           method: MergeMethodStore.method(for: model.key), isBusy: model.isActing,
+                           method: MergeMethodStore.method(for: model.key), isBusy: model.isActing, error: model.actionError,
                            onConfirm: { send(.merge($0), account) }, onCancel: { sheet = nil })
             }
         }

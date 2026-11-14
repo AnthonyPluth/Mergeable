@@ -5,7 +5,11 @@ import MergeableCore
 struct InboxItem: Identifiable, Hashable {
     var summary: PullRequestSummary
     var section: InboxSection
+    /// Every account whose queries returned this PR in ANY section. Routing uses this, so the acting account is the
+    /// same whichever row the PR is opened from.
     var fetchedBy: Set<AccountID>
+    /// Only the accounts that returned it in this row's section, for the per-account tabs.
+    var sectionFetchedBy: Set<AccountID>
     var id: String { "\(section.rawValue):\(summary.nodeID)" }
 }
 
@@ -22,13 +26,15 @@ enum CheckVisual: Equatable { case success, failure, pending }
 enum InboxLogic {
     /// All accounts' snapshots merged per section: a PR several accounts returned appears once, newest first.
     static func merge(_ snapshots: [AccountID: InboxSnapshot]) -> [InboxSection: [InboxItem]] {
+        var allFetchers: [String: Set<AccountID>] = [:]
+        for (account, snap) in snapshots { for list in snap.sections.values { for pr in list { allFetchers[pr.nodeID, default: []].insert(account) } } }
         var out: [InboxSection: [InboxItem]] = [:]
         for section in InboxSection.allCases {
             var byNode: [String: InboxItem] = [:]
             for (account, snap) in snapshots {
                 for pr in snap.sections[section] ?? [] {
-                    if var existing = byNode[pr.nodeID] { existing.fetchedBy.insert(account); byNode[pr.nodeID] = existing }
-                    else { byNode[pr.nodeID] = InboxItem(summary: pr, section: section, fetchedBy: [account]) }
+                    if var existing = byNode[pr.nodeID] { existing.sectionFetchedBy.insert(account); byNode[pr.nodeID] = existing }
+                    else { byNode[pr.nodeID] = InboxItem(summary: pr, section: section, fetchedBy: allFetchers[pr.nodeID] ?? [account], sectionFetchedBy: [account]) }
                 }
             }
             out[section] = byNode.values.sorted { $0.summary.updatedAt != $1.summary.updatedAt ? $0.summary.updatedAt > $1.summary.updatedAt : $0.summary.nodeID < $1.summary.nodeID }
@@ -40,7 +46,7 @@ enum InboxLogic {
         let all = merged[section] ?? []
         switch tab {
         case .all: return all
-        case .account(let id): return all.filter { $0.fetchedBy.contains(id) }
+        case .account(let id): return all.filter { $0.sectionFetchedBy.contains(id) }
         }
     }
 

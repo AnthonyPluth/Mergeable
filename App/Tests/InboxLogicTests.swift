@@ -18,6 +18,7 @@ final class InboxLogicTests: XCTestCase {
         let merged = InboxLogic.merge([p: a, w: b])
         XCTAssertEqual(merged[.yours]?.map(\.summary.nodeID), ["B", "A"])
         XCTAssertEqual(merged[.yours]?.last?.fetchedBy, [p, w])
+        XCTAssertEqual(merged[.yours]?.last?.sectionFetchedBy, [p, w])
         XCTAssertEqual(merged[.needsReview]?.count, 0)
     }
 
@@ -25,6 +26,19 @@ final class InboxLogicTests: XCTestCase {
         let merged = InboxLogic.merge([p: InboxSnapshot(sections: [.yours: [pr("A")]]), w: InboxSnapshot(sections: [.yours: [pr("B", n: 2)]])])
         XCTAssertEqual(InboxLogic.items(merged, in: .account(w), section: .yours).map(\.summary.nodeID), ["B"])
         XCTAssertEqual(InboxLogic.items(merged, in: .all, section: .yours).count, 2)
+    }
+
+    func testRoutingSeesEveryAccountThatReturnedThePRInAnySection() {
+        // Account p has it under "yours", account w under "needs review": both rows must route the same way.
+        let shared = pr("S", owner: "oss", n: 3)
+        let merged = InboxLogic.merge([p: InboxSnapshot(sections: [.yours: [shared]]), w: InboxSnapshot(sections: [.needsReview: [shared]])])
+        let yours = merged[.yours]!.first!, needs = merged[.needsReview]!.first!
+        XCTAssertEqual(yours.fetchedBy, [p, w]); XCTAssertEqual(needs.fetchedBy, [p, w])
+        XCTAssertEqual(yours.sectionFetchedBy, [p]); XCTAssertEqual(needs.sectionFetchedBy, [w])
+        let router = Router(accounts: [personal, work], remembered: [shared.key: w])
+        XCTAssertEqual(InboxLogic.resolveActor(key: shared.key, fetchedBy: yours.fetchedBy, router: router, claims: []), .acting(w))
+        XCTAssertEqual(InboxLogic.resolveActor(key: shared.key, fetchedBy: needs.fetchedBy, router: router, claims: []), .acting(w))
+        XCTAssertEqual(InboxLogic.items(merged, in: .account(p), section: .needsReview).count, 0)   // tabs stay per section
     }
 
     func testResolveActorFollowsTheRouterAndNeverGuesses() {

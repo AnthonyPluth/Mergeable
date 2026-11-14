@@ -9,6 +9,7 @@ struct MergeSheet: View {
     let headOid: String
     @State var method: MergeMethod
     var isBusy: Bool
+    var error: String? = nil
     var onConfirm: (MergeMethod) -> Void
     var onCancel: () -> Void
 
@@ -34,6 +35,7 @@ struct MergeSheet: View {
                     .font(.body.weight(.semibold)).frame(maxWidth: .infinity).padding(.vertical, 10)
             }
             .buttonStyle(.borderedProminent).tint(.green).disabled(isBusy)
+            if let error { Text(error).font(.footnote).foregroundStyle(Primer.danger).frame(maxWidth: .infinity, alignment: .leading) }
             Button("Cancel", action: onCancel).frame(maxWidth: .infinity)
         }
         .padding(20)
@@ -55,6 +57,7 @@ struct ComposeSheet: View {
     let buttonTitle: String
     let bodyRequired: Bool
     var isBusy: Bool
+    var error: String? = nil
     var onSend: (String) -> Void
     var onCancel: () -> Void
     @State private var text = ""
@@ -65,6 +68,7 @@ struct ComposeSheet: View {
                 TextEditor(text: $text)
                     .frame(minHeight: 160)
                     .overlay(RoundedRectangle(cornerRadius: 8).stroke(Primer.border))
+                if let error { Text(error).font(.footnote).foregroundStyle(Primer.danger).frame(maxWidth: .infinity, alignment: .leading) }
                 Button(buttonTitle) { onSend(text) }
                     .buttonStyle(.borderedProminent)
                     .disabled(isBusy || (bodyRequired && text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty))
