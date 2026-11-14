@@ -27,12 +27,13 @@ enum Queries {
     static let close = "mutation($id:ID!){closePullRequest(input:{pullRequestId:$id}){clientMutationId}}"
     static let reopen = "mutation($id:ID!){reopenPullRequest(input:{pullRequestId:$id}){clientMutationId}}"
 
-    static func searches(for login: String) -> [(InboxSection, String)] {
+    /// The five inbox searches. For an org owner (per-org PAT) `org:` replaces `user:`.
+    static func searches(for owner: String, isOrg: Bool = false) -> [(InboxSection, String)] {
         let base = "is:pr is:open archived:false"
         return [
             (.needsReview, "\(base) review-requested:@me"),
             (.yours, "\(base) author:@me"),
-            (.yours, "\(base) user:\(login)"),
+            (.yours, "\(base) \(isOrg ? "org" : "user"):\(owner)"),
             (.assignedOrMentioned, "\(base) assignee:@me"),
             (.assignedOrMentioned, "\(base) mentions:@me"),
         ]

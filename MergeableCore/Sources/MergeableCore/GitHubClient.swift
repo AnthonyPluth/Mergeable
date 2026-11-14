@@ -104,14 +104,21 @@ public final class GitHubClient: Sendable {
     public func inbox(for account: Account) async throws -> InboxSnapshot {
         struct R: Decodable { struct S: Decodable { var nodes: [Lossy<GQLPR>] }; var search: S }
         var sections: [InboxSection: [PullRequestSummary]] = [:]
-        for (section, q) in Queries.searches(for: account.login) {
-            let r: R = try await graphQL(Queries.search, ["q": q], account: account.id, owner: account.login)
-            var list = sections[section] ?? []
-            for node in r.search.nodes.compactMap(\.value) {
-                guard let s = summary(node), !list.contains(where: { $0.nodeID == s.nodeID }) else { continue }
-                list.append(s)
+        // A GitHub App account has one token; a PAT account may have one per org, so each owner is searched with its own token.
+        var owners: [(name: String, isOrg: Bool)] = [(account.login, false)]
+        if account.connection == .pat {
+            for org in account.orgs where org.lowercased() != account.login.lowercased() { owners.append((org, true)) }
+        }
+        for owner in owners {
+            for (section, q) in Queries.searches(for: owner.name, isOrg: owner.isOrg) {
+                let r: R = try await graphQL(Queries.search, ["q": q], account: account.id, owner: owner.name)
+                var list = sections[section] ?? []
+                for node in r.search.nodes.compactMap(\.value) {
+                    guard let s = summary(node), !list.contains(where: { $0.nodeID == s.nodeID }) else { continue }
+                    list.append(s)
+                }
+                sections[section] = list
             }
-            sections[section] = list
         }
         for s in InboxSection.allCases where sections[s] == nil { sections[s] = [] }
         return InboxSnapshot(sections: sections)

@@ -28,6 +28,18 @@ func auth(_ r: URLRequest) -> String? { r.value(forHTTPHeaderField: "Authorizati
         #expect(a.status.rollup == .success && a.commentCount == 2 && a.lastCommentAuthor == "bob" && a.lastReviewState == "APPROVED")
     }
 
+    @Test func patAccountSearchesEachOrgWithItsOwnToken() async throws {
+        let t = MockTransport { _ in (200, json(#"{"data":{"search":{"nodes":[]}}}"#), [:]) }
+        let orgTokens = OwnerTokens()
+        let multi = Account(id: AccountID("w"), login: "work", label: "W", color: .orange, connection: .pat, orgs: ["acme", "beta"])
+        _ = try await GitHubClient(transport: t, tokens: orgTokens, onUnauthorized: { _ in }).inbox(for: multi)
+        #expect(t.requests.count == 15)   // five searches for each of login, acme, beta
+        #expect(Set(t.requests.map { auth($0)! }) == ["Bearer tok-work", "Bearer tok-acme", "Bearer tok-beta"])
+        let queries = (0..<15).map { (t.bodyJSON($0)["variables"] as! [String: String])["q"]! }
+        #expect(queries.contains("is:pr is:open archived:false org:acme"))
+        #expect(queries.contains("is:pr is:open archived:false user:work"))
+    }
+
     @Test func usesOnlyTheGivenAccountsToken() async throws {
         let t = MockTransport { _ in (200, json(#"{"data":{"search":{"nodes":[]}}}"#), [:]) }
         _ = try await client(t).inbox(for: acctW)
@@ -90,4 +102,8 @@ final class Box<T: Sendable>: @unchecked Sendable {
     init(_ v: T) { self.v = v }
     var value: T { lock.lock(); defer { lock.unlock() }; return v }
     func append<E>(_ e: E) where T == [E] { lock.lock(); v.append(e); lock.unlock() }
+}
+
+struct OwnerTokens: TokenProvider {
+    func token(for account: AccountID, owner: String) async throws -> String { "tok-\(owner)" }
 }
