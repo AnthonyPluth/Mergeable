@@ -1,0 +1,30 @@
+name: Security scans
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  scans:
+    permissions:
+      contents: read
+      pull-requests: read      # the pull request's changed files
+      security-events: write   # the SARIF uploads
+      actions: read            # Scorecard
+      id-token: write          # Scorecard publishes its results
+    uses: AnthonyPluth/fleet/.github/workflows/security.yml@7a7226e5974d4948651f7705a87df4a1957ba7e7   # v3.3.0
+    with:
+      code-paths: ^(relay/src|MergeableCore|App)/
+      semgrep-paths: relay/src
+      web-dirs: relay

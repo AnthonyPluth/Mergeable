@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: daily }
+    cooldown: { default-days: 3 }
+    groups:
+      fleet:
+        patterns: ["AnthonyPluth/fleet", "AnthonyPluth/fleet/*"]
+  - package-ecosystem: npm
+    directory: /relay
+    schedule: { interval: weekly, day: monday }
+    cooldown: { default-days: 7 }
+    groups:
+      npm: { update-types: [minor, patch] }
