@@ -9,6 +9,10 @@ public struct DeviceCode: Sendable {
     public var verificationURL: URL
     public var interval: Int
     public var expiresAt: Date
+    public init(deviceCode: String, userCode: String, verificationURL: URL, interval: Int, expiresAt: Date) {
+        self.deviceCode = deviceCode; self.userCode = userCode; self.verificationURL = verificationURL
+        self.interval = interval; self.expiresAt = expiresAt
+    }
 }
 
 public struct AppTokens: Codable, Sendable, Equatable {
@@ -16,6 +20,10 @@ public struct AppTokens: Codable, Sendable, Equatable {
     public var accessExpiry: Date
     public var refreshToken: String
     public var refreshExpiry: Date
+    public init(accessToken: String, accessExpiry: Date, refreshToken: String, refreshExpiry: Date) {
+        self.accessToken = accessToken; self.accessExpiry = accessExpiry
+        self.refreshToken = refreshToken; self.refreshExpiry = refreshExpiry
+    }
 }
 
 public enum DeviceFlowError: Error, Equatable { case expired, denied, unexpected(String) }

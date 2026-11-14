@@ -6,6 +6,7 @@ import FoundationNetworking
 public struct Identity: Equatable, Sendable {
     public var login: String
     public var orgs: [String]
+    public init(login: String, orgs: [String]) { self.login = login; self.orgs = orgs }
 }
 
 /// Reads `/user` and `/user/orgs` with the token being added, for the login and orgs of a new account.
