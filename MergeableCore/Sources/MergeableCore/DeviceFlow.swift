@@ -11,7 +11,7 @@ public struct DeviceCode: Sendable {
     public var expiresAt: Date
 }
 
-public struct AppTokens: Codable, Sendable {
+public struct AppTokens: Codable, Sendable, Equatable {
     public var accessToken: String
     public var accessExpiry: Date
     public var refreshToken: String
