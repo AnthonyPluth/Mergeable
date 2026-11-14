@@ -40,12 +40,16 @@ public struct TimelineItem: Sendable, Hashable {
     public var kind: Kind
     public var reviewState: String?
     public var body: String
+    public init(author: String?, date: Date, kind: Kind, reviewState: String? = nil, body: String) {
+        self.author = author; self.date = date; self.kind = kind; self.reviewState = reviewState; self.body = body
+    }
 }
 
 public struct CheckContext: Sendable, Hashable {
     public var name: String
     public var state: String
     public var url: URL?
+    public init(name: String, state: String, url: URL? = nil) { self.name = name; self.state = state; self.url = url }
 }
 
 public struct PullRequestDetail: Sendable {
@@ -53,6 +57,9 @@ public struct PullRequestDetail: Sendable {
     public var body: String
     public var timeline: [TimelineItem]
     public var checks: [CheckContext]
+    public init(summary: PullRequestSummary, body: String, timeline: [TimelineItem], checks: [CheckContext]) {
+        self.summary = summary; self.body = body; self.timeline = timeline; self.checks = checks
+    }
 }
 
 public struct ChangedFile: Codable, Sendable, Hashable {
@@ -61,6 +68,9 @@ public struct ChangedFile: Codable, Sendable, Hashable {
     public var additions: Int
     public var deletions: Int
     public var patch: String?
+    public init(path: String, status: String, additions: Int, deletions: Int, patch: String? = nil) {
+        self.path = path; self.status = status; self.additions = additions; self.deletions = deletions; self.patch = patch
+    }
 }
 
 public enum ReviewEvent: String, Sendable { case approve = "APPROVE", requestChanges = "REQUEST_CHANGES", comment = "COMMENT" }
