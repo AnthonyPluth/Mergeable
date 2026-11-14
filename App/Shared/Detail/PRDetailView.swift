@@ -57,6 +57,7 @@ struct PRDetailView: View {
             if let f = env.detailFixtures[model.item.summary.nodeID] { model.useFixture(f) }
             else { await model.load(store: store, client: env.client) }
         }
+        .onAppear { if env.detailFixtures[model.item.summary.nodeID] == nil { AppServices.shared.markRead(model.item.summary) } }
         .sheet(item: $sheet) { which in sheetContent(which) }
         .confirmationDialog("Which account should act?", isPresented: Binding(get: { choosing != nil }, set: { if !$0 { choosing = nil } }), titleVisibility: .visible) {
             ForEach(choices) { a in

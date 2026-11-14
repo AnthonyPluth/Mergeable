@@ -15,6 +15,10 @@ final class InboxModel: ObservableObject {
     init() { isFixture = false }
     init(fixture snapshots: [AccountID: InboxSnapshot]) { isFixture = true; self.snapshots = snapshots }
 
+    /// When set, refreshes go through the poller (one fetch that also feeds alerts) instead of fetching directly.
+    var poller: InboxPoller?
+    var onRefreshed: (() -> Void)?
+
     var merged: [InboxSection: [InboxItem]] { InboxLogic.merge(snapshots) }
 
     func refresh(accounts: [Account], client: GitHubClient) async {
@@ -24,6 +28,14 @@ final class InboxModel: ObservableObject {
         let ids = Set(accounts.map(\.id))
         snapshots = snapshots.filter { ids.contains($0.key) }
         errors = errors.filter { ids.contains($0.key) }
+        if let poller {
+            for (id, result) in await poller.poll(accounts: accounts) {
+                if let snap = result.snapshot { snapshots[id] = snap; errors[id] = nil } else { errors[id] = result.error }
+            }
+            lastRefreshed = Date()
+            onRefreshed?()
+            return
+        }
         await withTaskGroup(of: (AccountID, InboxSnapshot?, String?).self) { group in
             for account in accounts {
                 group.addTask {
@@ -37,5 +49,6 @@ final class InboxModel: ObservableObject {
             }
         }
         lastRefreshed = Date()
+        onRefreshed?()
     }
 }

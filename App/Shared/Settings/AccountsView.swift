@@ -37,6 +37,9 @@ struct AccountsView: View {
                 if store.accounts.isEmpty { Text("No accounts yet").foregroundStyle(.secondary) }
             }
             Section {
+                NavigationLink("Notifications") { NotificationSettingsView() }
+            }
+            Section {
                 NavigationLink {
                     OwnerMapView()
                 } label: {

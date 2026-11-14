@@ -29,7 +29,7 @@ struct MockupScene {
     }
 
     private func root<V: View>(_ v: V) -> some View {
-        v.environmentObject(store).environmentObject(env).preferredColorScheme(.dark).environment(\.colorScheme, .dark)
+        v.environmentObject(store).environmentObject(env).environmentObject(inbox).environmentObject(NotificationRouter()).preferredColorScheme(.dark).environment(\.colorScheme, .dark)
     }
 }
 
