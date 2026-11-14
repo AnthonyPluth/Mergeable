@@ -1,19 +1,10 @@
-# Node
 node_modules/
-.wrangler/
 .dev.vars
-
-# Secrets
+.wrangler/
 *.p8
 *.pem
-
-# Swift / Xcode
-.build/
-.swiftpm/
+xcuserdata/
 DerivedData/
-*.xcodeproj/xcuserdata/
-*.xcworkspace/xcuserdata/
-App/*.xcodeproj/
-
-# macOS
+.build/
+*.xcodeproj
 .DS_Store

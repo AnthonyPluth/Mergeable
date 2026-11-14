@@ -1,0 +1,41 @@
+name: Merge gate
+
+on:  # zizmor: ignore[dangerous-triggers]
+  workflow_run:
+    workflows: [CI, Security scans]
+    types: [completed]
+  check_suite:
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Pull request number"
+        required: true
+
+permissions: {}
+
+concurrency:
+  group: merge-gate-${{ github.event.workflow_run.head_sha || github.event.check_suite.head_sha || inputs.pr }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'pull_request') ||
+      (github.event_name == 'check_suite' && github.event.check_suite.app.slug != 'github-actions')
+    permissions:
+      contents: write
+      pull-requests: write
+      statuses: write
+      actions: write
+      checks: read
+    uses: AnthonyPluth/fleet/.github/workflows/merge-gate.yml@7a7226e5974d4948651f7705a87df4a1957ba7e7   # v3.3.0
+    with:
+      sha: ${{ github.event.workflow_run.head_sha || github.event.check_suite.head_sha }}
+      pr: ${{ inputs.pr }}
+      required-workflows: |
+        CI
+        Security scans
+      required-statuses: ""   # no agent review adopted yet
+      after-merge-workflows: security.yml
