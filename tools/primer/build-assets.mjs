@@ -1,4 +1,4 @@
-// Generates the app's Primer colors (light + dark) and Octicons into the asset catalog.
+// Generates the app's Primer colors (dark only; the app is dark-mode only) and Octicons into the asset catalog.
 //   node build-assets.mjs [outDir]    default: ../../App/Shared/Assets.xcassets
 import { readFileSync, mkdirSync, writeFileSync, copyFileSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -57,12 +57,8 @@ for (const t of TOKENS) {
   colors[name] = { light: l, dark: d };
   const dir = join(out, "Colors", `${name}.colorset`);
   mkdirSync(dir, { recursive: true });
-  const entry = (hex, appearance) => ({
-    ...(appearance ? { appearances: [{ appearance: "luminosity", value: appearance }] } : {}),
-    color: { "color-space": "srgb", components: component(hex) },
-    idiom: "universal",
-  });
-  writeFileSync(join(dir, "Contents.json"), json({ colors: [entry(l), entry(d, "dark")], info }));
+  const entry = (hex) => ({ color: { "color-space": "srgb", components: component(hex) }, idiom: "universal" });
+  writeFileSync(join(dir, "Contents.json"), json({ colors: [entry(d)], info }));
 }
 
 for (const o of OCTICONS) {

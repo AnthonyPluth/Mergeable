@@ -82,16 +82,15 @@ const mac = (mode) => `<div class="mac ${mode}" style="${cssVars(mode)}"><div cl
 const css = readFileSync(join(here, "mockups.css"), "utf8");
 const page = (body) => `<!doctype html><meta charset=utf-8><style>${css}</style><body>${body}`;
 const sets = {
-  "iphone": page(`<div class="phones">${phone("light", phoneInbox(), "Inbox · All · light")}${phone("dark", phoneInbox(), "Inbox · All · dark")}${phone("light", phoneDetail(false), "PR detail · light")}${phone("dark", phoneDetail(true), "Merge sheet · dark")}</div>`),
-  "mac-light": page(mac("light")),
-  "mac-dark": page(mac("dark")),
+  "iphone": page(`<div class="phones">${phone("dark", phoneInbox(), "Inbox · All")}${phone("dark", phoneDetail(false), "PR detail")}${phone("dark", phoneDetail(true), "Merge sheet")}</div>`),
+  "mac": page(mac("dark")),
 };
 
 const { chromium } = createRequire(import.meta.url)("playwright");
 mkdirSync(out, { recursive: true });
 const browser = await chromium.launch();
 for (const [name, html] of Object.entries(sets)) {
-  const pg = await browser.newPage({ deviceScaleFactor: 2, viewport: name === "iphone" ? { width: 1700, height: 940 } : { width: 1180, height: 760 } });
+  const pg = await browser.newPage({ deviceScaleFactor: 2, viewport: name === "iphone" ? { width: 1300, height: 940 } : { width: 1180, height: 760 } });
   await pg.setContent(html);
   await pg.screenshot({ path: join(out, `${name}.png`), fullPage: true });
   await pg.close();

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Primer functional colors and Octicons, generated into the asset catalog by tools/primer/build-assets.mjs.
+/// Primer functional colors (dark only: the app forces dark mode) and Octicons, generated into the asset catalog by tools/primer/build-assets.mjs.
 enum PRVisualState {
     case open, draft, merged, closed
 

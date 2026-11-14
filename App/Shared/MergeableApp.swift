@@ -8,7 +8,7 @@ struct MergeableApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView(keychain: keychain).environmentObject(accounts)
+            RootView(keychain: keychain).environmentObject(accounts).preferredColorScheme(.dark)
         }
         #if os(macOS)
         .defaultSize(width: 1120, height: 700)
