@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: daily }
-    cooldown: { default-days: 3 }
+    cooldown: { default-days: 7 }
     groups:
       fleet:
         patterns: ["AnthonyPluth/fleet", "AnthonyPluth/fleet/*"]

@@ -54,3 +54,13 @@ describe("handleWebhook", () => {
     expect((await listDevices(env.MERGEABLE)).map((d) => d.token)).toEqual(["prod"]);
   });
 });
+
+describe("merge-ready retry", () => {
+  it("failed delivery releases the claim so a later webhook retries", async () => {
+    const { env, pushes } = await setup({}, () => 503);
+    await handleWebhook(env, "check_suite", suite);
+    expect(pushes).toHaveLength(2);
+    await handleWebhook(env, "check_suite", suite);
+    expect(pushes).toHaveLength(4);
+  });
+});

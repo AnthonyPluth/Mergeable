@@ -4,7 +4,7 @@ import { classify, type Notice, type PRRef } from "./events";
 import { renderAlert } from "./copy";
 import { appJwt, installationToken, fetchPRStatus, prsForSha } from "./githubApp";
 import { isMergeReady } from "./mergeReady";
-import { firstTime } from "./dedupe";
+import { claim, confirm, release } from "./dedupe";
 import { listDevices, removeDevice } from "./devices";
 
 export async function handleWebhook(env: Env, event: string, payload: any): Promise<void> {
@@ -25,14 +25,18 @@ export async function handleWebhook(env: Env, event: string, payload: any): Prom
   }
 
   const seen = new Set<string>();
+  const claims = new Map<Notice, string>();
   for (const pr of evaluate) {
     const k = `${pr.owner}/${pr.repo}#${pr.number}`.toLowerCase();
     if (seen.has(k) || !token) continue;
     seen.add(k);
     const s = await fetchPRStatus(token, pr);
     for (const n of notices) if (!n.prTitle && n.pr.number === pr.number && n.pr.repo === pr.repo) { n.prTitle = s.title; n.url = s.url; }
-    if (isMergeReady(s) && (await firstTime(env.MERGEABLE, `ready:${pr.owner}/${pr.repo}#${pr.number}@${s.headOid}`, 2592000)))
+    const key = `ready:${pr.owner}/${pr.repo}#${pr.number}@${s.headOid}`;
+    if (isMergeReady(s) && (await claim(env.MERGEABLE, key))) {
       notices.push({ kind: "mergeReady", pr, prTitle: s.title, url: s.url });
+      claims.set(notices[notices.length - 1]!, key);
+    }
   }
 
   const sendable = notices.filter((n) => n.prTitle);
@@ -45,9 +49,16 @@ export async function handleWebhook(env: Env, event: string, payload: any): Prom
       aps: { alert, sound: "default", "thread-id": `${n.pr.owner}/${n.pr.repo}#${n.pr.number}` },
       mergeable: { v: 1, kind: n.kind, owner: n.pr.owner, repo: n.pr.repo, number: n.pr.number, url: n.url },
     };
-    for (const d of devices) {
-      const r = await sendPush(cfg, d.token, d.environment, body);
-      if (r.status === 410 || (r.status === 400 && r.reason === "BadDeviceToken")) await removeDevice(env.MERGEABLE, d.token);
+    let delivered = devices.length === 0;
+    try {
+      for (const d of devices) {
+        const r = await sendPush(cfg, d.token, d.environment, body);
+        if (r.status === 200) delivered = true;
+        if (r.status === 410 || (r.status === 400 && r.reason === "BadDeviceToken")) await removeDevice(env.MERGEABLE, d.token);
+      }
+    } finally {
+      const key = claims.get(n);
+      if (key) await (delivered ? confirm(env.MERGEABLE, key, 2592000) : release(env.MERGEABLE, key));
     }
   }
 }
