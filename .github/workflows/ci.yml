@@ -36,6 +36,16 @@ jobs:
         working-directory: relay
       - run: npm test
         working-directory: relay
+  tools:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test check-token.sh
+        run: bash tools/test/check-token.test.sh
   core:
     # MergeableCore arrives with plan Tasks 7-10; the job passes until then.
     runs-on: macos-latest
