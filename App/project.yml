@@ -1,0 +1,58 @@
+name: Mergeable
+options:
+  bundleIdPrefix: com.pluth
+  deploymentTarget:
+    iOS: "18.0"
+    macOS: "15.0"
+  createIntermediateGroups: true
+packages:
+  MergeableCore:
+    path: ../MergeableCore
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  Mergeable:
+    type: application
+    supportedDestinations: [iOS, macOS]
+    sources: [Shared]
+    dependencies:
+      - package: MergeableCore
+    entitlements:
+      path: Mergeable.entitlements
+      properties:
+        aps-environment: development
+        com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)com.pluth.mergeable
+        keychain-access-groups: [$(AppIdentifierPrefix)com.pluth.mergeable]
+    info:
+      path: Info.plist
+      properties:
+        CFBundleDisplayName: Mergeable
+        UILaunchScreen: {}
+        UIBackgroundModes: [fetch, remote-notification]
+        BGTaskSchedulerPermittedIdentifiers: [com.pluth.mergeable.refresh]
+        LSApplicationCategoryType: public.app-category.developer-tools
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pluth.mergeable
+        ENABLE_PREVIEWS: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: ""
+  MergeableTests:
+    type: bundle.unit-test
+    supportedDestinations: [iOS, macOS]
+    sources: [Tests]
+    dependencies:
+      - target: Mergeable
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pluth.mergeable.tests
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  Mergeable:
+    build:
+      targets:
+        Mergeable: all
+    test:
+      targets: [MergeableTests]
