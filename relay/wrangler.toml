@@ -1,0 +1,11 @@
+name = "mergeable-relay"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+
+# Create with: wrangler kv namespace create MERGEABLE, then paste the id.
+[[kv_namespaces]]
+binding = "MERGEABLE"
+id = "REPLACE_ME"
+
+[vars]
+SELF_LOGIN = "AnthonyPluth"
